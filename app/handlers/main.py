@@ -1,21 +1,35 @@
-from aiogram import Router
+from os import environ
+from typing import Iterator
+from aiogram import Bot, Router
 from aiogram.types import Message
-from llama_cpp import Llama
+from dotenv import load_dotenv
+from aiogram.enums.parse_mode import ParseMode
+from together import Together
+from together.types.chat_completions import ChatCompletionChunk, ChatCompletionResponse
+
 
 router = Router(name=__name__)
-llm = Llama(
-      model_path="../models/7B/llama-7b.Q4_K_S.gguf",
-      # n_gpu_layers=-1, # Uncomment to use GPU acceleration
-      # seed=1337, # Uncomment to set a specific seed
-      # n_ctx=2048, # Uncomment to increase the context window
+# model_name = "app/models/RuGPT3"
+
+load_dotenv()
+
+client = Together(api_key=environ['TOGETHER_API_KEY'])
+
+@router.message(lambda x: x.text)
+async def echo(message: Message, bot: Bot):
+    response: ChatCompletionResponse | Iterator[ChatCompletionChunk] = client.chat.completions.create(
+    model="meta-llama/Llama-Vision-Free",
+    messages=[{
+        "role": "user",
+        "content": message.text
+    }],
+    max_tokens=1024,
+    temperature=0.7,
+    top_p=0.7,
+    top_k=50,
+    repetition_penalty=1,
+    stop=["<|eot_id|>","<|eom_id|>"]
 )
-output = llm(
-      "Q: Name the planets in the solar system? A: ", # Prompt
-      max_tokens=32, # Generate up to 32 tokens, set to None to generate up to the end of the context window
-      stop=["Q:", "\n"], # Stop generating just before the model would generate a new question
-      echo=True # Echo the prompt back in the output
-) # Generate a completion, can also call create_completion
-print(output)
-@router.message()
-async def echo(message: Message):
-    await message.reply("Бля");
+    answer = response.choices[0].message.content
+    print("Ответил на {}: {}".format(message.text, answer))
+    await message.reply(answer)

@@ -1,10 +1,12 @@
 import asyncio
 from os import environ
 from aiogram import Bot, Dispatcher
+
 import dotenv
 from app.handlers.main import router
 
-dotenv.load_dotenv()
+
+dotenv.load_dotenv(dotenv_path=".env")
 
 try:
     bot = Bot(token=environ['BOT_TOKEN'])
