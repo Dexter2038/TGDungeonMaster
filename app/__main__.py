@@ -1,7 +1,6 @@
 import asyncio
 from os import environ
 from aiogram import Bot, Dispatcher
-
 import dotenv
 from app.handlers.main import router
 
@@ -9,10 +8,10 @@ from app.handlers.main import router
 dotenv.load_dotenv(dotenv_path=".env")
 
 try:
-    bot = Bot(token=environ['BOT_TOKEN'])
+    bot = Bot(token=environ["BOT_TOKEN"])
     dp = Dispatcher()
 except KeyError:
-    raise RuntimeError('BOT_TOKEN is not set')
+    raise RuntimeError("BOT_TOKEN is not set")
 except Exception as e:
     raise e
 
